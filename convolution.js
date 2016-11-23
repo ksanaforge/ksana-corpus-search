@@ -1,11 +1,10 @@
-const tokenizers=require("./tokenizers");
 const bsearch=require("ksana-corpus/bsearch");
 const reduce=function(arr,weights) {
 	var out=[];
 	for(let i=0;i<arr.length;i++) {
 		const a=arr[i],w=weights[i];
 		for (let j=0;j<a.length;j++) {
-			const blk=Math.floor(a[j]/wsz);
+			const blk=Math.floor(a[j]/WSZ);
 			if (!out[blk]) out[blk]=0;
 			out[blk]+=w;
 		}
@@ -15,18 +14,19 @@ const reduce=function(arr,weights) {
 const convoluteBlocks=function(blocksum,qwcount,maxblockcount){
 	var convolute=0,out=[];
 
-	var threshold=qwcount*wsz / 5;
-	threshold=threshold*threshold;
-	for (let i=0;i<qwcount;i++) convolute+= (blocksum[i]||0)*(blocksum[i]||0);
+	var threshold=qwcount*WSZ ;
+	
+	for (let i=0;i<qwcount;i++) convolute+= blocksum[i]||0;
 
 	for (let i=qwcount;i<maxblockcount;i++) {
 		if (convolute>threshold) {
 			var at=(i>qwcount)?i-qwcount:i;
-			out.push([at*wsz,convolute]);
+			out.push([at*WSZ,convolute]);
 		}
-		convolute-=(blocksum[i-qwcount]||0) *(blocksum[i-qwcount]||0);
-		convolute+= (blocksum[i]||0)*(blocksum[i]||0);
+		convolute-=blocksum[i-qwcount]||0; //remove too far
+		convolute+= blocksum[i]||0;        //add new comer
 	}
+	console.log("pass threshold",out.length,maxblockcount)
 	return out;
 }
 const maxtpos=function(postings){
@@ -38,28 +38,19 @@ const maxtpos=function(postings){
 	return maxtpos;
 }
 
-const wsz=8; //default window size
+const WSZ=8; //default window size
+const BIGRAM_WEIGHT=10;
 
-const termWeight=function(postings)	{
-	var out=[];
-	const length=postings.reduce( function(a,p){return a+p.length},0);
-	out=postings.map( function(p){
-		const r=(length-p.length)/length;
-		return r*r;
-	});
-	return out;
-}
-const blockScore=function(postings,tokenlength) {
+const blockScore=function(postings,tokenlength,weights) {
 	const max=maxtpos(postings);
-	const weights=termWeight(postings)
-	var qwcount= Math.floor(postings.length/wsz); //how many window in the query
-	if (postings.length%wsz!==0) qwcount++;
-	var filtersize=Math.floor(tokenlength/wsz);
-	if (tokenlength%wsz!==0) filtersize++;
-	//console.log('filtersize',filtersize,wsz,tokenlength,postings.length);
+	var qwcount= Math.floor(postings.length/WSZ); //how many window in the query
+	if (postings.length%WSZ!==0) qwcount++;
+	var filtersize=Math.floor(tokenlength/WSZ);
+	if (tokenlength%WSZ!==0) filtersize++;
+	//console.log('filtersize',filtersize,WSZ,tokenlength,postings.length);
 
 	const blocks=reduce(postings,weights);
-	var r=convoluteBlocks(blocks, filtersize ,Math.floor(max/wsz)+1);
+	var r=convoluteBlocks(blocks, filtersize ,Math.floor(max/WSZ)+1);
 	r.sort(function(a,b){return b[1]-a[1]});
 	return r;
 }
@@ -73,7 +64,7 @@ const groupByLine=function(res,kposs){
 	matches.forEach(function(m){
 		const kpos=m[0];
 		if (!byline[kpos]) byline[kpos]=0;
-		byline[kpos] += m[1]*m[1]*m[1];
+		byline[kpos] += m[1];
 	});
 
 	var out=[];
@@ -87,26 +78,39 @@ const groupByLine=function(res,kposs){
 	return out;
 }
 const convolutionSearch=function(cor,query,opts,cb){
-	const tokenizer=tokenizers(cor.meta.versions.tokenizer);
-	const r=tokenizer.tokenize(query);
+	const r=cor.tokenizer.tokenize(query);
 	const tokens=r.map(function(tk){return tk[0]});
 	var t=new Date();
 	dosearch=function(res){
 		
 		const alltokens=res[0],posting_length=res[1];
 		var totalpostinglength=0;
+		var tokenid_len=[];
 
-		var tokenid_len=tokens.map(function(tk){
+		tokens.forEach(function(tk,idx){
 			const at= bsearch(alltokens,tk);
-			const len=posting_length[at];
-			return [at,len,tk]
+
+			if (at>-1) {
+				tokenid_len.push([at, posting_length[at],tk]);
+			}
+			if (idx) {
+				const bigram=tokens[idx-1]+tk;
+				const at2= bsearch(alltokens,bigram);
+				if (at2>-1 && alltokens[at2]==bigram) {
+					tokenid_len.push([at2,posting_length[at2],bigram,BIGRAM_WEIGHT]);
+					//console.log("bigram",bigram,alltokens[at2]);
+				}
+			}
 		});
 		
 		tokenid_len=tokenid_len.filter(function(t){return t[0]!==-1});
 		totalpostinglength= tokenid_len.reduce(function(n,v){ return n+v[1] } , 0);
 		console.log(totalpostinglength)
 
-		tokenid_len=tokenid_len.map(function(t){return [t[0],t[1],t[2],t[1]/totalpostinglength]});
+		tokenid_len=tokenid_len.map(function(t){
+			return [t[0],t[1],t[2] //postings id, posting len, token,
+			, t[3]?t[3]:t[1]/totalpostinglength  ] //weight
+		});
 
 		tokenid_len.sort(function(t1,t2){return t2[1]-t1[1]});
 
@@ -118,11 +122,12 @@ const convolutionSearch=function(cor,query,opts,cb){
 		}
 
 		const postingkeys=tokenid_len.map(function(tk){return ["inverted","postings",tk[0]]});
+		const weights=tokenid_len.map(function(tk){return tk[3]});
 
 		cor.get(postingkeys,function(postings){
 			console.log("fetch data time",new Date()-t);
 			t=new Date();
-			var res=blockScore(postings,tokens.length); //array of [tpos, score]
+			var res=blockScore(postings,tokens.length,weights); //return array of [tpos, score]
 			const tposs=res.map(function(r){return r[0]});
 
 			cor.fromTPos(tposs,function(kposs){

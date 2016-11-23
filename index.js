@@ -15,7 +15,7 @@
 
 */
 const bsearch=require("ksana-corpus/bsearch");
-const tokenizers=require("./tokenizers");
+
 const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
 	var out=[];
@@ -40,7 +40,6 @@ const expandtoken=function(){
 
 }
 const parseQuery=function(cor,query) {
-	const tokenizer=tokenizers(cor.meta.versions.tokenizer);
 	var phrases=breakIntoPhrases(query);
 	
 	//var r=tokenizer.tokenize(query)
