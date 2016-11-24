@@ -107,6 +107,21 @@ const groupByLine=function(res,kposs){
 	out.sort(function(a,b){return b[1]-a[1];});
 	return out;
 }
+/* convert to kPos for final posting with optional score*/
+const postingToKPos=function(cor,arr,cb){
+	var candidates=arr;
+	var tposs=arr;
+	if (typeof tposs[0]!=="number") { //candidate format
+		tposs=arr.map(function(r){return r[0]});
+	} else {
+		candidates=arr.map(function(a){return [a,1]});//same score for all posting
+	}
+	cor.fromTPos(tposs,function(kposs){
+		const matches=groupByLine(candidates,kposs);
+		cb(matches);
+	});	
+}
+/*given a query, return tpos or kpos with score*/
 const convolutionSearch=function(cor,query,opts,cb){
 	const r=cor.tokenizer.tokenize(query);
 	const tokens=r.map(function(tk){return tk[0]});
@@ -129,6 +144,7 @@ const convolutionSearch=function(cor,query,opts,cb){
 		}
 
 		const postingkeys=tokenid_len.map(function(tk){return ["inverted","postings",tk[0]]});
+		const terms=tokenid_len.map(function(tk){return tk[2]}).join(" ");
 
 		cor.get(postingkeys,function(postings){
 			timer.loadposting=new Date()-t1;t1=new Date();
@@ -136,16 +152,19 @@ const convolutionSearch=function(cor,query,opts,cb){
 			var options={timer:timer, maxcandidate:opts.maxcandidate,timer:timer
 				,windowsize:windowsize,threshold:threshold};
 			const candidates=reducePostings(postings, options);
+
+			if (opts.tpos) {
+				cb&&cb({matches:candidates,terms,timer,unit:"tpos"});
+				return;
+			}
+			
 			t1=new Date();
-			const tposs=candidates.map(function(r){return r[0]});
-			cor.fromTPos(tposs,function(kposs){
-				timer.tokpos=new Date()-t1;t1=new Date();
-				const matches=groupByLine(candidates,kposs);
-				timer.total=new Date()-t;
-				const terms=tokenid_len.map(function(tk){return tk[2]}).join(" ");
-				cb&&cb({matches, timer , terms});
-			})
+			postingToKPos(cor,candidates,function(matches){
+				timer.tokpos=new Date()-t1;
+				cb&&cb({matches:matches,terms,timer,unit:"kpos"});
+			});
 		})
 	})
 }
-module.exports={convolutionSearch:convolutionSearch,reducePostings:reducePostings};
+module.exports={convolutionSearch:convolutionSearch,reducePostings:reducePostings
+,  postingToKPos:postingToKPos };
