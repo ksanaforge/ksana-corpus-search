@@ -27,10 +27,8 @@ const preparetokens=function(alltokens,posting_length,tokens,maxtoken){
 		if (tokenid_len.length>maxtoken) tokenid_len.length=maxtoken;
 		return tokenid_len;
 }
-
 const combinePosting=function(postings){
-	//slightly faster than concat one by one
-	var o=[].concat.apply([], postings); 
+	var o=[].concat.apply([], postings); 	//slightly faster than concat one by one
 	return o.sort(function(a,b){return a-b});
 }
 /*convolute scan posting and filter out noise by given threshold*/
@@ -66,7 +64,6 @@ const boostCandidate=function(candidates, windowsize,postings,postingweight){
 	}
 	return candidates;
 }
-
 /* reduce multiple posting to single posting */
 const reducePostings=function(postings,opts){
 		var t1=new Date();
@@ -74,7 +71,6 @@ const reducePostings=function(postings,opts){
 		const averagepostinglength=totalpostinglength/postings.length;
 
 		const hits=combinePosting(postings);	
-		if(opts.timer) opts.timer.mergeposting=new Date()-t1;t1=new Date();
 		opts=opts||{};
 		if (!opts.postingweight) {
 			opts.postingweight=[];
@@ -88,9 +84,9 @@ const reducePostings=function(postings,opts){
 
 		var candidates=convolutePosting(hits, windowsize, threshold,maxcandidate);
 		candidates=boostCandidate(candidates,windowsize,postings,opts.postingweight);
-		if(opts.timer) opts.timer.convolution=new Date()-t1;t1=new Date();
 		return candidates;
 }
+/* group tpos to kpos line, add up all score in same line*/
 const groupByLine=function(res,kposs){ 
 	var byline={},out=[];
 	var matches=res.map(function(r,idx){
@@ -99,7 +95,7 @@ const groupByLine=function(res,kposs){
 	matches.forEach(function(m){
 		const kpos=m[0];
 		if (!byline[kpos]) byline[kpos]=0;
-		if (m[1]>byline[kpos]) byline[kpos]= m[1];
+		byline[kpos] += m[1];
 	});
 	for (var kpos in byline) {
 		out.push([kpos,byline[kpos]]);
@@ -149,15 +145,16 @@ const convolutionSearch=function(cor,query,opts,cb){
 		cor.get(postingkeys,function(postings){
 			timer.loadposting=new Date()-t1;t1=new Date();
 
-			var options={timer:timer, maxcandidate:opts.maxcandidate,timer:timer
+			var options={maxcandidate:opts.maxcandidate,timer:timer
 				,windowsize:windowsize,threshold:threshold};
 			const candidates=reducePostings(postings, options);
+			timer.reduceposting=new Date()-t;
 
 			if (opts.tpos) {
 				cb&&cb({matches:candidates,terms,timer,unit:"tpos"});
 				return;
 			}
-			
+
 			t1=new Date();
 			postingToKPos(cor,candidates,function(matches){
 				timer.tokpos=new Date()-t1;
