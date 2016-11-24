@@ -15,6 +15,8 @@
 
 */
 const bsearch=require("ksana-corpus/bsearch");
+const convolutionSearch=require("./convolution").convolutionSearch;
+const reducePostings=require("./convolution").reducePostings;
 
 const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
@@ -63,8 +65,6 @@ const exactSearch=function(cor,query,opts){
 	const phrases=parseQuery(cor,query);
 	console.log("search",phrases);
 }
-
-const convolutionSearch=require("./convolution");
 
 module.exports={exactSearch:exactSearch,convolutionSearch:convolutionSearch,
 	breakIntoPhrases:breakIntoPhrases};
