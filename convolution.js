@@ -1,5 +1,5 @@
 const bsearch=require("ksana-corpus/bsearch");
-const MAX_CANDIDATE=50, BOOST_RATE=1.15;
+const MAX_CANDIDATE=50, BOOST_RATE=1.1, MAX_TOKEN=50;
 
 const groupByLine=function(res,kposs){ 
 	var byline={},out=[];
@@ -40,17 +40,25 @@ const convolutePosting=function(posting, windowsize,threshold){
 	return out;
 }
 const boostCandidate=function(candidates, windowsize,postings){
+	const totalpostinglength= tokenid_len.reduce(function(n,v){ return n+v[1] } , 0);
+	const averagepostinglength=totalpostinglength/tokenid_len.length;
+	var postingscore=[];
+	for (var i=0;i<postings.length;i++ ){
+		postingscore[i]=Math.log(2+Math.log(2+averagepostinglength/postings[i].length));
+	}
 	for (var i=0;i<candidates.length;i++) {
-		var score=1;
+		var matchcount=0,termscore=0;
 		const tpos=candidates[i][0]+windowsize;
+		
 		for (var j=0;j<postings.length;j++) {
 			const posting=postings[j];
 			const at=bsearch(posting,tpos,true);
 			if (tpos-posting[at-1]<=windowsize) { // is this term in range?
-				score*=BOOST_RATE;
+				matchcount++;
+				termscore+=postingscore[j];
 			}
 		}
-		candidates[i][1]*=score;
+		candidates[i][1]*= Math.pow(BOOST_RATE,matchcount)* Math.sqrt(termscore);
 	}
 	return candidates;
 }
@@ -77,6 +85,7 @@ const preparetokens=function(res,tokens){
 			}
 		});
 		tokenid_len=tokenid_len.filter(function(t){return t[0]!==-1});
+		if (tokenid_len.length>MAX_TOKEN) tokenid_len.length=MAX_TOKEN;
 		return tokenid_len;
 }
 const convolutionSearch=function(cor,query,opts,cb){
@@ -94,6 +103,7 @@ const convolutionSearch=function(cor,query,opts,cb){
 			if (tokenid_len[0][1] < averagepostinglength*2) break;
 			tokenid_len.shift();
 		}
+
 		const postingkeys=tokenid_len.map(function(tk){return ["inverted","postings",tk[0]]});
 		const threshold=Math.floor(tokenid_len.length/2); //need at least 1/2 of token match to pass
 		const windowsize=Math.floor(tokens.length*1.2); //allowing some "noise"
