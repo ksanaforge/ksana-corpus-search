@@ -52,6 +52,9 @@ const boostCandidate=function(candidates, windowsize,postings,postingweight){
 		var matchcount=0,termscore=0;
 		const tpos=candidates[i][0]+windowsize;
 		
+		const maxscore= Math.pow(BOOST_RATE,postings.length) 
+			+ postingweight.reduce(function(n,v){return n+v},0);
+			
 		for (var j=0;j<postings.length;j++) {
 			const posting=postings[j];
 			const at=bsearch(posting,tpos,true);
@@ -60,7 +63,8 @@ const boostCandidate=function(candidates, windowsize,postings,postingweight){
 				termscore+=postingweight[j];
 			}
 		}
-		candidates[i][1]*= Math.pow(BOOST_RATE,matchcount)* Math.sqrt(termscore);
+		var score=(Math.pow(BOOST_RATE,matchcount)+termscore) / maxscore;
+		candidates[i][1] = score;
 	}
 	return candidates;
 }
@@ -95,7 +99,7 @@ const groupByLine=function(res,kposs){
 	matches.forEach(function(m){
 		const kpos=m[0];
 		if (!byline[kpos]) byline[kpos]=0;
-		byline[kpos] += m[1];
+		if (m[1]>byline[kpos]) byline[kpos] = m[1];
 	});
 	for (var kpos in byline) {
 		out.push([kpos,byline[kpos]]);
