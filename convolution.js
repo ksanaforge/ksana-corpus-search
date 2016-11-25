@@ -155,14 +155,14 @@ const convolutionSearch=function(cor,query,opts,cb){
 			timer.reduceposting=new Date()-t;
 
 			if (opts.tpos) {
-				cb&&cb({matches:candidates,terms,timer,unit:"tpos"});
+				cb&&cb({matches:candidates,terms:terms,timer:timer,unit:"tpos"});
 				return;
 			}
 
 			t1=new Date();
 			postingToKPos(cor,candidates,function(matches){
 				timer.tokpos=new Date()-t1;
-				cb&&cb({matches:matches,terms,timer,unit:"kpos"});
+				cb&&cb({matches:matches,terms:terms,timer:timer,unit:"kpos"});
 			});
 		})
 	})

@@ -97,4 +97,4 @@ const indexOf=function(text,query,opts){
 
 	return matches;
 }
-module.exports={indexOf};
+module.exports={indexOf:indexOf};

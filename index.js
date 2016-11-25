@@ -21,7 +21,7 @@ const reducePostings=require("./convolution").reducePostings;
 const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
 	var out=[];
-	for (let i=0;i<parts.length;i++) {
+	for (var i=0;i<parts.length;i++) {
 		var part=parts[i];
 		if (part[0]=='"') {
 			out.push(part.substr(1,part.length-2));
