@@ -1,15 +1,21 @@
 const WIN_EXPAND=1.2; //window expansion ratio
-const convolute=function(T,terms,threshold,windowsize){
+
+const convolute=function(T,terms,threshold,windowsize,tokenized){
 	var score=0, out=[];
 	for (var i=0;i<windowsize;i++) {
-		const t=T[i][0];
+		var t=T[i];
+		if (tokenized) t=t[0];
 		if (terms[t]) {
 			score++;
 		}
 	}
 
 	for (var i=windowsize;i<T.length;i++) {
-		const head=T[i][0], tail=T[i-windowsize][0]; //the term at i
+		var head=T[i], tail=T[i-windowsize]; //the term at i
+		if (tokenized) {
+			head=head[0];
+			tail=tail[0];
+		}
 		if ( terms[head]) score++;  //if the term exists in query
 		if (i-windowsize>=0 && terms[tail] ) score--; //term slip out of window
 
@@ -52,21 +58,31 @@ const candidatesToStringIndex=function(candidates,T,terms,windowsize){
 	}
 	return out;
 }
-
-const defaulttokenizer={
-	tokenize:function(str){ 
-	//naively break a string into tokens , without considering surrogate and non-chinese words
-		return str.split("").map(function(s,idx){
-			return [s,s,idx];  //normalized term, original term , index in str
-		});
+const candidatesToStringIndex2=function(candidates,T,terms,windowsize){
+	const out=[];
+	for (var i=0;i<candidates.length;i++) {
+		const candidate=candidates[i];
+		var begin=candidate[0],end=candidate[0]+windowsize;
+		while ( !terms[T[begin]] &&begin) begin++; 
+		while ( !terms[T[end]] && end)    end--;
+		out.push([begin,end+1,candidate[1]]);
 	}
+	return out;
 }
+
+
 const indexOf=function(text,query,opts){
 	opts=opts||{};
-	const tokenizer=opts.tokenizer||defaulttokenizer;//caller can supply a tokenizer
 	const terms={};
-	const T=tokenizer.tokenize(text);
-	const Q=tokenizer.tokenize(query);
+	var Q,T;
+	if (opts.tokenizer) {
+		T=opts.tokenizer.tokenize(text);
+		Q=opts.tokenizer.tokenize(query);
+	} else {
+		T=text;
+		Q=query.split("");
+	}
+
 	const win_expand=opts.win_expand || WIN_EXPAND;
 
 	Q.forEach(function(q){ terms[q[0]]= true }); //for fast checking if term exists in query
@@ -74,8 +90,10 @@ const indexOf=function(text,query,opts){
 	const windowsize=Math.floor( Q.length*win_expand) +1 ; //window size for convolution
 	const threshold=Math.floor(Q.length/2);      //a substring in window must earn more than 50%
 
-	var candidates=convolute(T,terms,threshold,windowsize);
-	const matches=candidatesToStringIndex(candidates,T,terms,windowsize);
+	var candidates=convolute(T,terms,threshold,windowsize,opts.tokenizer);
+
+	const cts=opts.tokenizer?candidatesToStringIndex:candidatesToStringIndex2;
+	const matches=cts(candidates,T,terms,windowsize);
 
 	return matches;
 }
