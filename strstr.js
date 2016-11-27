@@ -51,7 +51,7 @@ const candidatesToStringIndex=function(candidates,T,terms,windowsize){
 	const out=[];
 	for (var i=0;i<candidates.length;i++) {
 		const candidate=candidates[i];
-		var begin=candidate[0]-2,end=candidate[0]+windowsize+1; //-2 to allow some tolerance
+		var begin=candidate[0]-1,end=candidate[0]+windowsize+1; //-2 to allow some tolerance
 		while ( !terms[T[begin][0]] &&begin) begin++; 
 		while ( !terms[T[end][0]] && end)    end--;
 		out.push([ T[begin][2],T[end][2]+1,candidate[1]]);
@@ -62,7 +62,7 @@ const candidatesToStringIndex2=function(candidates,T,terms,windowsize){
 	const out=[];
 	for (var i=0;i<candidates.length;i++) {
 		const candidate=candidates[i];
-		var begin=candidate[0]-2,end=candidate[0]+windowsize+1;//-2 to allow some tolerance
+		var begin=candidate[0]-1,end=candidate[0]+windowsize+1;//-2 to allow some tolerance
 		while ( !terms[T[begin]] &&begin) begin++; 
 		while ( !terms[T[end]] && end)    end--;
 		out.push([begin,end+1,candidate[1]]);
@@ -70,7 +70,24 @@ const candidatesToStringIndex2=function(candidates,T,terms,windowsize){
 	return out;
 }
 
-
+/* remove score contribute by duplicate terms */
+const dedup=function(matches,text,terms,tokenized){
+	for (var i=0;i<matches.length;i++) {
+		const match=matches[i];
+		const start=match[0],end=match[1];
+		const s=text.substring(start,end);
+		var score=0;
+		for (var term in terms) {
+			const c=term.charCodeAt(0);
+			if (c<0x3400 || c>0x9fff) continue;//skip non BMP, missing punc will not loss score
+			if (s.indexOf(term)===-1) score--;
+		}
+		if (score) {
+			matches[i][2]+=score;
+		}
+	}
+	return matches.sort(function(a,b){return b[2]-a[2]});
+}
 const indexOf=function(text,query,opts){
 	opts=opts||{};
 	const terms={};
@@ -93,8 +110,8 @@ const indexOf=function(text,query,opts){
 	var candidates=convolute(T,terms,threshold,windowsize,opts.tokenizer);
 
 	const cts=opts.tokenizer?candidatesToStringIndex:candidatesToStringIndex2;
-	const matches=cts(candidates,T,terms,windowsize);
-
+	var matches=cts(candidates,T,terms,windowsize);
+	matches=dedup(matches,text,terms,opts.tokenizer);
 	return matches;
 }
 module.exports={indexOf:indexOf};
