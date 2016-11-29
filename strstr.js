@@ -1,4 +1,4 @@
-const WIN_EXPAND=1.2; //window expansion ratio
+const WIN_EXPAND=1.3; //window expansion ratio
 
 const convolute=function(T,terms,threshold,windowsize,tokenized){
 	var score=0, out=[];
@@ -106,7 +106,6 @@ const indexOf=function(text,query,opts){
 	
 	const windowsize=Math.floor( Q.length*win_expand) +1 ; //window size for convolution
 	const threshold=Math.floor(Q.length/2);      //a substring in window must earn more than 50%
-
 	var candidates=convolute(T,terms,threshold,windowsize,opts.tokenizer);
 
 	const cts=opts.tokenizer?candidatesToStringIndex:candidatesToStringIndex2;
