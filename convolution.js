@@ -1,7 +1,7 @@
 const bsearch=require("ksana-corpus/bsearch");
 const MAX_CANDIDATE=50, BOOST_RATE=1.1, MAX_TOKEN=50;
 const WIN_EXPAND=1.5;
-
+const postingToKPos=require("./utils").postingToKPos;
 const preparetokens=function(alltokens,posting_length,tokens,maxtoken){
 		var tokenid_len=[],tokenexists={};;
 		tokens.forEach(function(tk,idx){
@@ -40,14 +40,14 @@ const convolutePosting=function(posting, windowsize,threshold,maxcandidate){
 			sum++;
 			j++;
 		}
-		if (sum>threshold) out.push([posting[i],sum]);
+		if (sum>=threshold) out.push([posting[i],sum]);
 	}
 	out.sort(function(a,b){return b[1]-a[1]});
 	if (out.length>maxcandidate) out.length=maxcandidate;
 	return out;
 }
-/* boosting the score of candidate by checking how many term found in scope*/
-const boostCandidate=function(candidates, windowsize,postings,postingweight){
+/* win score by distinct term found in scope, term frequency is not used */
+const distinctTermScore=function(candidates, windowsize,postings,postingweight){
 	for (var i=0;i<candidates.length;i++) {
 		var matchcount=0,termscore=0;
 		const tpos=candidates[i][0]+windowsize;
@@ -68,6 +68,12 @@ const boostCandidate=function(candidates, windowsize,postings,postingweight){
 	}
 	return candidates;
 }
+const unitizeScore=function(candidates){ //for single term query, item[1] is term frequency.
+	const maxscore=Math.max.apply(null, candidates.map(function(item){return item[1]}));
+	return candidates.map(function(item){
+		return [item[0],Math.sqrt(Math.sqrt(item[1]/maxscore))]
+	});
+}
 /* reduce multiple posting to single posting */
 const reducePostings=function(postings,opts){
 		var t1=new Date();
@@ -87,40 +93,15 @@ const reducePostings=function(postings,opts){
 		const threshold=opts.threshold||postings.length/2;
 
 		var candidates=convolutePosting(hits, windowsize, threshold,maxcandidate);
-		candidates=boostCandidate(candidates,windowsize,postings,opts.postingweight);
+		if (postings.length>1) {
+			candidates=distinctTermScore(candidates,windowsize,postings,opts.postingweight);	
+		} else {
+			candidates=unitizeScore(candidates);
+		}
+		
 		return candidates;
 }
-/* group tpos to kpos line, add up all score in same line*/
-const groupByLine=function(res,kposs){ 
-	var byline={},out=[];
-	var matches=res.map(function(r,idx){
-			return [kposs[idx],r[1]];
-	});
-	matches.forEach(function(m){
-		const kpos=m[0];
-		if (!byline[kpos]) byline[kpos]=0;
-		if (m[1]>byline[kpos]) byline[kpos] = m[1];
-	});
-	for (var kpos in byline) {
-		out.push([kpos,byline[kpos]]);
-	}
-	out.sort(function(a,b){return b[1]-a[1];});
-	return out;
-}
-/* convert to kPos for final posting with optional score*/
-const postingToKPos=function(cor,arr,cb){
-	var candidates=arr;
-	var tposs=arr;
-	if (typeof tposs[0]!=="number") { //candidate format
-		tposs=arr.map(function(r){return r[0]});
-	} else {
-		candidates=arr.map(function(a){return [a,1]});//same score for all posting
-	}
-	cor.fromTPos(tposs,function(kposs){
-		const matches=groupByLine(candidates,kposs);
-		cb(matches);
-	});	
-}
+
 /*given a query, return tpos or kpos with score*/
 const convolutionSearch=function(cor,query,opts,cb){
 	const r=cor.tokenizer.tokenize(query);

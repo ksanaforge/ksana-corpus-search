@@ -341,6 +341,7 @@ var unique = function(ar){
 
 var plphrase = function (postings,ops) {
   var r = [];
+  ops=ops||[];
   for (var i=0;i<postings.length;i++) {
   	if (!postings[i])  return [];
   	if (0 === i) {
@@ -407,6 +408,7 @@ var trim=function(arr,start,end) {
 var plist={};
 plist.unpack=unpack;
 plist.plphrase=plphrase;
+plist.pland=pland;
 plist.plhead=plhead;
 plist.plfollow2=plfollow2;
 plist.plnotfollow2=plnotfollow2;
