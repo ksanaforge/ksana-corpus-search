@@ -3,6 +3,8 @@ const convolutionSearch=require("./convolution").convolutionSearch;
 const reducePostings=require("./convolution").reducePostings;
 const postingToKPos=require("./utils").postingToKPos;
 const phraseSearch=require("./phrasesearch");
+const plmerge=require("./plist").plmerge;
+const excerpt=require("./excerpt");
 const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
 	var out=[];
@@ -37,7 +39,7 @@ const phraseType=function(cor,phrase){
 const search=function(cor,query,opts,cb){
 	if (typeof opts=="function") cb=opts;
 	const phrases=parseQuery(cor,query);
-	var queue=[],phrasepostings=[], t=new Date(), t1=t,timer={};
+	var matches=[],queue=[],phrasepostings=[], t=new Date(), t1=t,timer={};
 	for (var i=0;i<phrases.length;i++) {
 		const searcher=phraseType(cor,phrases[i]);
 		queue.push( (function(s,phrase){
@@ -56,25 +58,20 @@ const search=function(cor,query,opts,cb){
 		var candidates=null,matchcount=0;
 		if (phrasepostings.length>1) {
 			const postings=phrasepostings.map(function(item){return item.postings});
-			candidates=reducePostings(postings,{windowsize:query.length});
-			matchcount=candidates.length;
+			matches=plmerge(postings,100);
+			count=matches.length;
 		} else{
 			if (!phrasepostings.length || !phrasepostings[0].postings){
-				candidates=[];
+				count=0;
 			} else {
-				matchcount=phrasepostings[0].postings.length;
-				const out=phrasepostings[0].postings.slice(0,300);
-				candidates=out;//no score, postingToKPos will add 1 as default score
+				count=phrasepostings[0].postings.length;
+				matches=phrasepostings[0].postings;
 			}
 		}
 		timer.reduce=new Date()-t1; t1=new Date();
-		postingToKPos(cor,candidates,function(matches){
-			timer.tokpos=new Date()-t1; t1=new Date();
-			timer.total=new Date()-t;
-			cb({matches:matches,matchcount:matchcount,phrasepostings:phrasepostings,timer:timer});
-		});
+		cb({matches:matches,count:count,phrasepostings:phrasepostings,timer:timer});
 	});
 	queue.shift()({__empty:true});
 }
 module.exports={search:search,convolutionSearch:convolutionSearch,
-	breakIntoPhrases:breakIntoPhrases};
+	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt};

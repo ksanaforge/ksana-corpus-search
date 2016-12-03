@@ -96,7 +96,7 @@ const simplePhrase=function(cor,phrase,cb){
 	});		
 }
 const fuzzyPhrase=function(cor,phrase){
-	//return postings and lengths
+	//return postings and lengths and score
 }
 
 module.exports={simplePhrase:simplePhrase,fuzzyPhrase:fuzzyPhrase}

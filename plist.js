@@ -399,7 +399,18 @@ var matchPosting=function(pl,gupl,start,end) {
   } 
   return {docs:docs,freq:freq};
 }
-
+/*group close postings */
+const plmerge=function(postings,maxdis){
+  if (!postings || !postings.length) return [];
+  if (postings.length<2) return postings[0];
+  postings.sort(function(a,b){return a.length-b.length});
+  var out=postings[0],i=1;
+  while (i<postings.length) {
+    out=plfollow2(out,postings[i],1,maxdis);
+    i++;
+  }
+  return out;
+}
 var trim=function(arr,start,end) {
   var s=indexOfSorted(arr,start);
   var e=indexOfSorted(arr,end);
@@ -426,4 +437,5 @@ plist.groupbyposting=groupbyposting;
 plist.groupbyposting2=groupbyposting2;
 plist.groupsum=groupsum;
 plist.combine=combine;
+plist.plmerge=plmerge;
 module.exports=plist;
