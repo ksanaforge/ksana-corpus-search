@@ -414,7 +414,7 @@ const plmerge=function(postings,maxdis){
 var trim=function(arr,start,end) {
   var s=indexOfSorted(arr,start);
   var e=indexOfSorted(arr,end);
-  return arr.slice(s,e+1);
+  return arr.slice(s,e);
 }
 var plist={};
 plist.unpack=unpack;
