@@ -80,6 +80,7 @@ var groupbyposting=function(arr,gposting) { //relative vpos
   while(i<arr.length) out[out.length-1].push(arr[i++]-gposting[gposting.length-1]);
   return out;
 }
+
 var groupbyposting2=function(arr,gposting) { //absolute vpos
   if (!arr || !arr.length) return [];
   if (!gposting || !gposting.length) return [arr.length];
@@ -416,6 +417,30 @@ var trim=function(arr,start,end) {
   var e=indexOfSorted(arr,end);
   return arr.slice(s,e);
 }
+const groupStat=function(arr,group){
+  if (!group.length) return [arr.length];
+  var out=[];
+  for (var i=0;i<=group.length;i++) out[i]=0;
+  
+  var p=0,i=0,lasti=0;
+  while (i<arr.length && p<group.length) {
+    if (arr[i]<group[p]) {
+      while (p<group.length && i<arr.length && arr[i]<group[p]) {
+        var start=0;
+        if (p>0) start=group[p-1];
+        out[p]++;
+        i++;
+      }
+    } 
+    p++;
+  }
+  //remaining
+  while(i<arr.length) {
+    out[out.length-1]++;
+    i++;
+  }
+  return out;
+}
 var plist={};
 plist.unpack=unpack;
 plist.plphrase=plphrase;
@@ -435,6 +460,7 @@ plist.groupbyblock2=groupbyblock2;
 plist.countbyposting=countbyposting;
 plist.groupbyposting=groupbyposting;
 plist.groupbyposting2=groupbyposting2;
+plist.groupStat=groupStat;
 plist.groupsum=groupsum;
 plist.combine=combine;
 plist.plmerge=plmerge;

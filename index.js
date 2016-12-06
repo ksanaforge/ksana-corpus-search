@@ -3,7 +3,7 @@ const convolutionSearch=require("./convolution").convolutionSearch;
 const reducePostings=require("./convolution").reducePostings;
 const postingToKPos=require("./utils").postingToKPos;
 const phraseSearch=require("./phrasesearch");
-const plmerge=require("./plist").plmerge;
+const plist=require("./plist");
 const excerpt=require("./excerpt");
 const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
@@ -58,7 +58,7 @@ const search=function(cor,query,opts,cb){
 		var candidates=null,matchcount=0;
 		if (phrasepostings.length>1) {
 			const postings=phrasepostings.map(function(item){return item.postings});
-			matches=plmerge(postings,100);
+			matches=plist.plmerge(postings,100);
 			count=matches.length;
 		} else{
 			if (!phrasepostings.length || !phrasepostings[0].postings){
@@ -73,5 +73,8 @@ const search=function(cor,query,opts,cb){
 	});
 	queue.shift()({__empty:true});
 }
+const groupStat=function(postings, groups){
+	return plist.groupStat(postings,groups);
+}
 module.exports={search:search,convolutionSearch:convolutionSearch,
-	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt};
+	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt,groupStat:groupStat};
