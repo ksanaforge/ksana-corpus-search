@@ -5,6 +5,7 @@ const postingToKPos=require("./utils").postingToKPos;
 const phraseSearch=require("./phrasesearch");
 const plist=require("./plist");
 const excerpt=require("./excerpt");
+const grouping=require("./grouping");
 const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
 	var out=[];
@@ -73,8 +74,7 @@ const search=function(cor,query,opts,cb){
 	});
 	queue.shift()({__empty:true});
 }
-const groupStat=function(postings, groups){
-	return plist.groupStat(postings,groups);
-}
+
 module.exports={search:search,convolutionSearch:convolutionSearch,
-	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt,groupStat:groupStat};
+	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt,
+	groupStat:grouping.groupStat,filterMatch:grouping.filterMatch};
