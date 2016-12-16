@@ -1,4 +1,4 @@
-const WIN_EXPAND=1.4; //window expansion ratio
+const WIN_EXPAND=1.3; //window expansion ratio
 
 const convolute=function(T,terms,threshold,windowsize,tokenized){
 	var score=0, out=[];

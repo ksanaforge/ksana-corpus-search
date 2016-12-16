@@ -1,5 +1,6 @@
 const bsearch=require("ksana-corpus/bsearch");
 const convolutionSearch=require("./convolution").convolutionSearch;
+const strstr=require("./strstr").indexOf;
 const reducePostings=require("./convolution").reducePostings;
 const postingToKPos=require("./utils").postingToKPos;
 const phraseSearch=require("./phrasesearch");
@@ -76,5 +77,5 @@ const search=function(cor,query,opts,cb){
 }
 
 module.exports={search:search,convolutionSearch:convolutionSearch,
-	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt,
+	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt,strstr:strstr,
 	groupStat:grouping.groupStat,filterMatch:grouping.filterMatch};
