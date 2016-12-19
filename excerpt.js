@@ -4,7 +4,7 @@ const plist=require("./plist");
 const bsearch=require("ksana-corpus/bsearch");
 const fetchExcerpts=function(cor,opts,cb){
 	cor.fromTPos(opts.tpos,{line:opts.line},function(res){
-		const {linekrange,kpos,linetpos}=res;
+		const linekrange=res.linekrange,kpos=res.kpos,linetpos=res.linetpos;
 		cor.getText(linekrange,function(texts){
 			var out=[];
 			for (var i=0;i<texts.length;i++){
@@ -27,4 +27,4 @@ const fetchExcerpts=function(cor,opts,cb){
 		})
 	});
 }
-module.exports={fetchExcerpts};
+module.exports={fetchExcerpts:fetchExcerpts};

@@ -32,7 +32,7 @@ const parseQuery=function(cor,query) {
 const phraseType=function(cor,phrase){
 	const tokenTypes=cor.tokenizer.tokenTypes;
 	const res=cor.tokenizer.tokenize(phrase);
-	const haspunc=res.filter((t)=>t[3]==cor.PUNC).length;
+	const haspunc=res.filter(function(t){return t[3]==cor.PUNC}).length;
 	if (haspunc || res.length>=8) {
 		return phraseSearch.fuzzyPhrase;
 	}
