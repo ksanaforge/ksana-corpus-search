@@ -3,6 +3,7 @@ const convolutionSearch=require("./convolution").convolutionSearch;
 const strstr=require("./strstr").indexOf;
 const reducePostings=require("./convolution").reducePostings;
 const postingToKPos=require("./utils").postingToKPos;
+const getArticleHits=require("./hits").getArticleHits;
 const phraseSearch=require("./phrasesearch");
 const plist=require("./plist");
 const excerpt=require("./excerpt");
@@ -78,4 +79,4 @@ const search=function(cor,query,opts,cb){
 
 module.exports={search:search,convolutionSearch:convolutionSearch,
 	breakIntoPhrases:breakIntoPhrases,excerpt:excerpt,strstr:strstr,
-	groupStat:grouping.groupStat,filterMatch:grouping.filterMatch};
+	groupStat:grouping.groupStat,filterMatch:grouping.filterMatch,getArticleHits:getArticleHits};

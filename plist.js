@@ -415,7 +415,7 @@ const plmerge=function(postings,maxdis){
 var trim=function(arr,start,end) {
   var s=indexOfSorted(arr,start);
   var e=indexOfSorted(arr,end);
-  if (end>arr[e]) e++;
+  if (start<arr[e] && end>arr[e]) e++;
   return arr.slice(s,e);
 }
 const groupStat=function(arr,group){
