@@ -3,6 +3,12 @@ excerpt text and kpos and highlighting */
 const plist=require("./plist");
 const bsearch=require("ksana-corpus/bsearch");
 const fetchExcerpts=function(cor,opts,cb){
+	/*
+	  hits are return as Token Position (tpos), convert to Ksana Position for highlighting
+		first phrase, get tpos of lines containing opts.tpos
+		second phrase , get the text
+		third phrase , calcuate exact character position (kpos) of each hit.
+	*/
 	cor.fromTPos(opts.tpos,{line:opts.line},function(res){
 		const linekrange=res.linekrange,kpos=res.kpos,linetpos=res.linetpos;
 		cor.getText(linekrange,function(texts){
@@ -11,17 +17,18 @@ const fetchExcerpts=function(cor,opts,cb){
 				var phrasehits=[];
 				const startkpos=cor.parseRange(linekrange[i]).start;
 				const layout=cor.layoutText(texts[i],startkpos);
+
 				if (opts.phrasepostings) { //trim posting and convert to kpos
 					opts.phrasepostings.forEach(function(item) { 
-						const posting=plist.trim(item.postings,linetpos[i][0],linetpos[i][1]);
-						const hitat=bsearch(layout.linebreaks,kpos[i]);
-						const linetext=layout.lines[hitat];
-						const hits=cor.fromTPos(posting,{linetext:linetext}).kpos;
+						const tposend=linetpos[i][linetpos[i].length-1];
+						const posting=plist.trim(item.postings,linetpos[i][0],tposend);
+						const hits=cor.fromTPos(posting,{linetext:layout.lines, linetpos:res.linetpos[i]}).kpos;
 						phrasehits.push( {phrase:item.phrase, hits:hits, lengths:item.lengths});
 					});
 				}
 				out.push({rawtext:texts[i],text:layout.lines.join("\n"),
-					linebreaks:layout.linebreaks,linetpos:linetpos[i],phrasehits:phrasehits});
+					linebreaks:layout.linebreaks,
+					linetpos:linetpos[i],phrasehits:phrasehits});
 			}
 			cb(out);
 		})

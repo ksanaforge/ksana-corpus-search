@@ -10,7 +10,6 @@ const getArticleHits=function(opts,cb){
 
 	const cor=opts.cor, linebreaks=opts.linebreaks, pagebreaks=opts.pagebreaks, lines=opts.lines;
 	const article=opts.article;
-	console.log(article);
 	
   var phrasehits=[];
   const tpos=plist.trim(searchresult.matches,article.tstart,article.tend);
@@ -20,12 +19,14 @@ const getArticleHits=function(opts,cb){
   	
 		searchresult.phrasepostings.forEach(function(item,idx) { 
 			const posting=plist.trim(item.postings,article.tstart,article.tend);
-			var hits=[];
+			var hits=[],linetext=[], linestart;
 			for (var i=0;i<kpos.length;i++) {
 				const hitat=bsearch(linebreaks,kpos[i]);
-				const linetext=lines[hitat];
-				hits=cor.fromTPos(posting,{linetext:linetext}).kpos;
+				if (i==0) linestart=linebreaks[hitat];
+				linetext.push(lines[hitat]);
 			}
+
+			hits=cor.fromTPos(posting,{linetext:linetext, linetpos:res.linetpos }).kpos;
 			phrasehits.push({phrase:item.phrase, hits:hits, lengths:item.lengths, idx:idx});
 		});
 		cb(phrasehits);
