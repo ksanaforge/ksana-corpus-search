@@ -15,6 +15,11 @@ const getArticleHits=function(opts,cb){
   const tpos=plist.trim(searchresult.matches,article.tstart,article.tend);
 
   cor.fromTPos(tpos,{},function(res){
+
+  	if (!res || res.kpos) {
+  		cb(null);
+  		return;
+  	}
   	const kpos=res.kpos;
   	
 		searchresult.phrasepostings.forEach(function(item,idx) { 
