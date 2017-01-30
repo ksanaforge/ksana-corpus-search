@@ -16,7 +16,7 @@ const getArticleHits=function(opts,cb){
 
   cor.fromTPos(tpos,{},function(res){
 
-  	if (!res || res.kpos) {
+  	if (!res || !res.kpos) {
   		cb(null);
   		return;
   	}
