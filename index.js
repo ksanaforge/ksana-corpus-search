@@ -34,7 +34,7 @@ const phraseType=function(cor,phrase){
 	const tokenTypes=cor.tokenizer.tokenTypes;
 	const res=cor.tokenizer.tokenize(phrase);
 	const haspunc=res.filter(function(t){return t[3]==cor.PUNC}).length;
-	if (haspunc || res.length>=8) {
+	if (haspunc || res.length>=10) {
 		return phraseSearch.fuzzyPhrase;
 	}
 	return phraseSearch.simplePhrase;
