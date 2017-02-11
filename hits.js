@@ -1,6 +1,13 @@
 const plist=require("./plist");
 const bsearch=require("ksana-corpus/bsearch");
-
+const getHitTPosOfArticle=function(phrasepostings,article){
+	var out=[];
+	for (var i=0;i<phrasepostings.length;i++) {
+		postings=phrasepostings[i].postings;
+		out=out.concat(plist.trim(postings,article.tstart,article.tend));
+  }
+  return out;
+}
 const getArticleHits=function(opts,cb){
 	const searchresult=opts.searchresult;
 	if (!searchresult || !searchresult.phrasepostings) {
@@ -12,21 +19,20 @@ const getArticleHits=function(opts,cb){
 	const article=opts.article;
 	
   var phrasehits=[];
-  const tpos=plist.trim(searchresult.matches,article.tstart,article.tend);
 
-  cor.fromTPos(tpos,{},function(res){
+  const tpos=getHitTPosOfArticle(searchresult.phrasepostings,article);
 
-  	if (!res || !res.kpos) {
+  cor.fromTPos(tpos,{},function(resall){ //the first call to fromTPos should be async, loading all line2tpos
+  	if (!resall || !resall.kpos) {
   		cb(null);
   		return;
   	}
-  	const kpos=res.kpos;
-  	
 		searchresult.phrasepostings.forEach(function(item,idx) { 
 			const posting=plist.trim(item.postings,article.tstart,article.tend);
+			const res=cor.fromTPos(posting,{});
 			var hits=[],linetext=[], linestart;
-			for (var i=0;i<kpos.length;i++) {
-				const hitat=bsearch(linebreaks,kpos[i]);
+			for (var i=0;i<res.kpos.length;i++) {
+				const hitat=bsearch(linebreaks,res.kpos[i]);
 				if (i==0) linestart=linebreaks[hitat];
 				linetext.push(lines[hitat]);
 			}
