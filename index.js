@@ -56,7 +56,10 @@ const search=function(cor,query,opts,cb){
 	}
 	queue.push( function(res){
 		timer.postings=new Date()-t1; t1=new Date();
-
+		if (res.__empty) { //empty search
+			cb({matches:[],count:0,phrasepostings:[],timer:0});
+			return;
+		}
 		phrasepostings.push(res);
 		var candidates=null,matchcount=0;
 		if (phrasepostings.length>1) {
