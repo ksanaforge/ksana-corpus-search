@@ -1,7 +1,7 @@
 /*given match posting and phrase postings, return 
 excerpt text and kpos and highlighting */
 const plist=require("./plist");
-const bsearch=require("ksana-corpus/bsearch");
+const bsearch=require("ksana-corpus").bsearch;
 const fetchExcerpts=function(cor,opts,cb){
 	/*
 	  hits are return as Token Position (tpos), convert to Ksana Position for highlighting
@@ -9,7 +9,7 @@ const fetchExcerpts=function(cor,opts,cb){
 		second phrase , get the text
 		third phrase , calcuate exact character position (kpos) of each hit.
 	*/
-	cor.fromTPos(opts.tpos,{line:opts.line},function(res){
+	cor.fromTPos(opts.tpos,{line:opts.line||1},function(res){
 		const linekrange=res.linekrange,kpos=res.kpos,linetpos=res.linetpos;
 		cor.getText(linekrange,function(texts){
 			var out=[];

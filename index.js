@@ -1,4 +1,4 @@
-const bsearch=require("ksana-corpus/bsearch");
+const bsearch=require("ksana-corpus").bsearch;
 const convolutionSearch=require("./convolution").convolutionSearch;
 const strstr=require("./strstr").indexOf;
 const reducePostings=require("./convolution").reducePostings;

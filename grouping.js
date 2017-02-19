@@ -1,4 +1,4 @@
-const bsearch=require("ksana-corpus/bsearch");
+const bsearch=require("ksana-corpus").bsearch;
 const plist=require("./plist");
 const groupStat=function(postings, groups){
 	return plist.groupStat(postings,groups);
