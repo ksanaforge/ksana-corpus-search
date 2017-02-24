@@ -4,7 +4,7 @@ const getHitTPosOfArticle=function(phrasepostings,article){
 	var out=[];
 	for (var i=0;i<phrasepostings.length;i++) {
 		postings=phrasepostings[i].postings;
-		out=out.concat(plist.trim(postings,article.tstart,article.tend));
+		if (postings) out=out.concat(plist.trim(postings,article.tstart,article.tend));
   }
   return out;
 }
@@ -19,7 +19,10 @@ const getArticleHits=function(opts,cb){
 	const article=opts.article;
 	
   var phrasehits=[];
-
+  if (!searchresult.phrasepostings) {
+  	cb(null);
+  	return;
+  }
   const tpos=getHitTPosOfArticle(searchresult.phrasepostings,article);
 
   cor.fromTPos(tpos,{},function(resall){ //the first call to fromTPos should be async, loading all line2tpos
@@ -28,6 +31,7 @@ const getArticleHits=function(opts,cb){
   		return;
   	}
 		searchresult.phrasepostings.forEach(function(item,idx) { 
+			if (!item.postings)return;
 			const posting=plist.trim(item.postings,article.tstart,article.tend);
 			const res=cor.fromTPos(posting,{});
 			var hits=[],linetext=[], linestart;
@@ -36,7 +40,6 @@ const getArticleHits=function(opts,cb){
 				if (i==0) linestart=linebreaks[hitat];
 				linetext.push(lines[hitat]);
 			}
-
 			hits=cor.fromTPos(posting,{linetext:linetext, linetpos:res.linetpos }).kpos;
 			phrasehits.push({phrase:item.phrase, hits:hits, lengths:item.lengths, idx:idx});
 		});
