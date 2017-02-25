@@ -10,6 +10,10 @@ const fetchExcerpts=function(cor,opts,cb){
 		third phrase , calcuate exact character position (kpos) of each hit.
 	*/
 	cor.fromTPos(opts.tpos,{line:opts.line||1},function(res){
+		if (!res) {
+			cb&&cb(null);
+			return;
+		}
 		const linekrange=res.linekrange,kpos=res.kpos,linetpos=res.linetpos;
 		cor.getText(linekrange,function(texts){
 			var out=[];
