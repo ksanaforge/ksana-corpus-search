@@ -21,7 +21,6 @@ const fetchExcerpts=function(cor,opts,cb){
 				var phrasehits=[];
 				const startkpos=cor.parseRange(linekrange[i]).start;
 				const layout=cor.layoutText(texts[i],startkpos);
-
 				if (opts.phrasepostings) { //trim posting and convert to kpos
 					opts.phrasepostings.forEach(function(item) { 
 						const tposend=linetpos[i][linetpos[i].length-1];

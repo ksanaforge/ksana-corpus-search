@@ -8,6 +8,9 @@ var splitPhrase=function(cor,simplephrase) {
 	var alltokens=cor.get(["inverted","tokens"])||[];
 
 	var tokens=cor.tokenizer.tokenize(simplephrase);
+	
+	tokens=tokens.filter(function(tk){return tk[3]!=="P" && tk[3]!==" "});
+
 	var loadtokens=[],lengths=[],j=0,lastbigrampos=-1;
 	while (j+1<tokens.length) {
 		var token=tokens[j][0];
@@ -76,7 +79,7 @@ const nativeMergePostings=function(cor,paths,cb){
 	});	
 }
 const simplePhrase=function(cor,phrase,cb){
-	const splitted=splitPhrase(cor,phrase);
+	const splitted=splitPhrase(cor,phrase.trim());
 
 	//phrase_term.width=splitted.tokenlength; //for excerpt.js to getPhraseWidth
 	var paths=postingPathFromTokens(cor,splitted.tokens);
@@ -84,7 +87,6 @@ const simplePhrase=function(cor,phrase,cb){
 		nativeMergePosting(cor,paths,cb);
 		return;
 	}
-
 	cor.get(paths,function(postings){ //this is sync
 		var out=postings[0],dis=splitted.lengths[0];
 		for (var i=1;i<postings.length;i++) {
@@ -92,7 +94,8 @@ const simplePhrase=function(cor,phrase,cb){
 			dis+=splitted.lengths[i];
 		}
 		cor.cachedPostings[phrase]=out;
-		cb({phrase:phrase,postings:out,lengths:phrase.length}); //fix length
+
+		cb({phrase:phrase,postings:out,lengths:splitted.tokenlength}); //fix length
 	});		
 }
 const fuzzyPhrase=function(cor,phrase){

@@ -14,7 +14,6 @@ const getArticleHits=function(opts,cb){
 		cb([]);
 		return;
 	}
-
 	const cor=opts.cor, linebreaks=opts.linebreaks, pagebreaks=opts.pagebreaks, lines=opts.lines;
 	const article=opts.article;
 	
