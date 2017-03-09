@@ -43,6 +43,7 @@ const search=function(cor,query,opts,cb){
 	if (typeof opts=="function") cb=opts;
 	const phrases=parseQuery(cor,query);
 	var matches=[],queue=[],phrasepostings=[], t=new Date(), t1=t,timer={};
+
 	for (var i=0;i<phrases.length;i++) {
 		const searcher=phraseType(cor,phrases[i]);
 		queue.push( (function(s,phrase){

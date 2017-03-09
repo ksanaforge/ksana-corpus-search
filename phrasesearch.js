@@ -52,9 +52,6 @@ var splitPhrase=function(cor,simplephrase) {
 
 var postingPathFromTokens=function(engine,tokens) {
 	const alltokens=engine.get(["inverted","tokens"]);
-	const meta=engine.get("meta");
-	
-
 	var postingid=[];
 	for (var i=0;i<tokens.length;i++) {
 		const at=plist.indexOfSorted(alltokens,tokens[i]);
@@ -83,6 +80,7 @@ const simplePhrase=function(cor,phrase,cb){
 
 	//phrase_term.width=splitted.tokenlength; //for excerpt.js to getPhraseWidth
 	var paths=postingPathFromTokens(cor,splitted.tokens);
+
 	if (cor.mergePostings) {
 		nativeMergePosting(cor,paths,cb);
 		return;
