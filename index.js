@@ -31,9 +31,10 @@ const parseQuery=function(cor,query) {
 	return phrases;
 }
 const phraseType=function(cor,phrase){
-	const tokenTypes=cor.tokenizer.tokenTypes;
+	const TokenTypes=cor.tokenizer.TokenTypes;
 	const res=cor.tokenizer.tokenize(phrase);
-	const haspunc=res.filter(function(t){return t[3]==cor.PUNC}).length;
+	const PUNC=TokenTypes.PUNC;
+	const haspunc=res.filter(function(t){return t[3]==PUNC}).length;
 	if (haspunc || res.length>=10) {
 		return phraseSearch.fuzzyPhrase;
 	}
@@ -58,7 +59,11 @@ const search=function(cor,query,opts,cb){
 	queue.push( function(res){
 		timer.postings=new Date()-t1; t1=new Date();
 		if (res.__empty) { //empty search
-			cb({matches:[],count:0,phrasepostings:[],timer:0});
+			cb({matches:[],count:0,phrasepostings:[],timer:{}});
+			return;
+		}
+		if (res.fuzzy) { //only accept one fuzzy phrase
+			cb(res);
 			return;
 		}
 		phrasepostings.push(res);

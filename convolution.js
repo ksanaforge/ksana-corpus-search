@@ -98,7 +98,9 @@ const reducePostings=function(postings,opts){
 		} else {
 			candidates=unitizeScore(candidates);
 		}
-		
+		candidates.sort(function(a,b){
+			return b[1]-a[1];
+		});
 		return candidates;
 }
 
@@ -134,17 +136,21 @@ const convolutionSearch=function(cor,query,opts,cb){
 				,windowsize:windowsize,threshold:threshold};
 			const candidates=reducePostings(postings, options);
 			timer.reduceposting=new Date()-t;
-
-			if (opts.tpos) {
-				cb&&cb({matches:candidates,terms:terms,timer:timer,unit:"tpos"});
-				return;
+			const phrasepostings=postings.map(function(p,idx){
+				return {postings:p,lengths:terms[idx].length,phrase:terms[idx]};
+			})
+			if (opts.kpos) {
+				t1=new Date();
+				postingToKPos(cor,candidates,function(matches){
+					timer.tokpos=new Date()-t1;
+					cb&&cb({matches:matches,phrasepostings:phrasepostings,
+						terms:terms,timer:timer,unit:"kpos"});
+				});
+			} else {
+				cb&&cb({matches:candidates,terms:terms,
+					phrasepostings:phrasepostings,timer:timer});
 			}
 
-			t1=new Date();
-			postingToKPos(cor,candidates,function(matches){
-				timer.tokpos=new Date()-t1;
-				cb&&cb({matches:matches,terms:terms,timer:timer,unit:"kpos"});
-			});
 		})
 	})
 }
