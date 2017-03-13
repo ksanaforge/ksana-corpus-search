@@ -20,18 +20,19 @@ const fetchExcerpts=function(cor,opts,cb){
 			for (var i=0;i<texts.length;i++){
 				var phrasehits=[];
 				const startkpos=cor.parseRange(linekrange[i]).start;
-				const layout=cor.layoutText(texts[i],startkpos);
+				const layout=cor.layoutText(texts[i],startkpos,null,linetpos[i]);
 				if (opts.phrasepostings) { //trim posting and convert to kpos
 					opts.phrasepostings.forEach(function(item) { 
 						const tposend=linetpos[i][linetpos[i].length-1];
 						const posting=plist.trim(item.postings,linetpos[i][0],tposend);
-						const hits=cor.fromTPos(posting,{linetext:layout.lines, linetpos:res.linetpos[i]}).kpos;
+						const hits=cor.fromTPos(posting,{linetext:layout.lines, linetpos:layout.linetpos}).kpos;
+
 						phrasehits.push( {phrase:item.phrase, hits:hits, lengths:item.lengths});
 					});
 				}
 				out.push({rawtext:texts[i],text:layout.lines.join("\n"),
 					linebreaks:layout.linebreaks,
-					linetpos:linetpos[i],phrasehits:phrasehits});
+					linetpos:layout.linetpos,phrasehits:phrasehits});
 			}
 			cb(out);
 		})

@@ -22,10 +22,6 @@ const breakIntoPhrases=function(query){
 	out=out.filter(function(o){return o.trim().length});
 	return out;
 }
-const expandtoken=function(){
-	//expand each token to variants
-	// tokens:["a",["v1","v2"], "a", 20, -10 ] //negative for ?, positive for *
-}
 const parseQuery=function(cor,query) {
 	var phrases=breakIntoPhrases(query);
 	return phrases;
@@ -35,7 +31,7 @@ const phraseType=function(cor,phrase){
 	const res=cor.tokenizer.tokenize(phrase);
 	const PUNC=TokenTypes.PUNC;
 	const haspunc=res.filter(function(t){return t[3]==PUNC}).length;
-	if (haspunc || res.length>=10) {
+	if (haspunc || res.length>=15) {
 		return phraseSearch.fuzzyPhrase;
 	}
 	return phraseSearch.simplePhrase;
