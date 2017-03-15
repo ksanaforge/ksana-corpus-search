@@ -30,7 +30,7 @@ var splitPhrase=function(cor,simplephrase) {
 	tokens=tokens.filter(function(tk){return tk[3]!=="P" && tk[3]!==" "});
 	var loadtokens=[],lengths=[],j=0,lastbigrampos=-1;
 
-	const putUnigram=function(token){
+	var putUnigram=function(token){
 		var variants=expandVariant(token);
 		if (variants instanceof Array) {
 			variants=variants.filter(function(v){
