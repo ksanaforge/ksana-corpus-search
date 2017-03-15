@@ -21,6 +21,7 @@ const enumBigram=function(t1,t2){
 // 菩提心     ==> 菩提  提心       1 2
 // 劫劫       ==> 劫    劫         1 1   // invalid
 // 因緣所生法  ==> 因緣  所生   生法   2 1 2
+// 民國五     ==  民國  五             2 1
 var splitPhrase=function(cor,simplephrase) {
 	var alltokens=cor.get(["inverted","tokens"])||[];
 
@@ -73,6 +74,9 @@ var splitPhrase=function(cor,simplephrase) {
 			lengths.push(2);
 		} else {//unigram
 			//filter out variants not in cor
+			if  (lengths[lengths.length-1]==2) {
+				token=tokens[j+1][0];
+			}
 			putUnigram(token);
 			j++;
 		}
@@ -84,6 +88,7 @@ var splitPhrase=function(cor,simplephrase) {
 		j++;
 		totallen++;
 	}
+	console.log(loadtokens)
 	return {tokens:loadtokens, lengths: lengths , tokenlength: tokens.length};
 }
 

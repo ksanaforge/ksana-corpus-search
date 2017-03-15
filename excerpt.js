@@ -26,8 +26,11 @@ const fetchExcerpts=function(cor,opts,cb){
 						const tposend=linetpos[i][linetpos[i].length-1];
 						const posting=plist.trim(item.postings,linetpos[i][0],tposend);
 						const hits=cor.fromTPos(posting,{linetext:layout.lines, linetpos:layout.linetpos}).kpos;
-
-						phrasehits.push( {phrase:item.phrase, hits:hits, lengths:item.lengths});
+						const endposting=posting.map(function(p,idx){
+							return p+(item.lengths[idx]||item.lengths);
+						})
+						const hitsend=cor.fromTPos(endposting,{linetext:layout.lines, linetpos:layout.linetpos}).kpos;
+						phrasehits.push( {phrase:item.phrase, hits:hits,hitsend:hitsend, lengths:item.lengths});
 					});
 				}
 				out.push({rawtext:texts[i],text:layout.lines.join("\n"),
