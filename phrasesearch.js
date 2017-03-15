@@ -1,5 +1,5 @@
 /**/
-const {expandVariant}=require("ksana-unihan-variant")
+const expandVariant=require("ksana-unihan-variant").expandVariant;
 
 const convolutionSearch=require("./convolution").convolutionSearch;
 const plist=require("./plist");
@@ -88,7 +88,6 @@ var splitPhrase=function(cor,simplephrase) {
 		j++;
 		totallen++;
 	}
-	console.log(loadtokens)
 	return {tokens:loadtokens, lengths: lengths , tokenlength: tokens.length};
 }
 
