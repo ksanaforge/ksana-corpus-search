@@ -1,11 +1,12 @@
 /**/
-const expandVariant=require("ksana-unihan-variant").expandVariant;
+
 
 const convolutionSearch=require("./convolution").convolutionSearch;
 const plist=require("./plist");
-const enumBigram=function(t1,t2){
-	var v1=expandVariant(t1);
-	var v2=expandVariant(t2);
+
+const enumBigram=function(cor,t1,t2){
+	var v1=cor.expandVariant(t1);
+	var v2=cor.expandVariant(t2);
 	var out=[];
 	if (v1==t1) v1=[t1];
 	if (v2==t2) v2=[t2];
@@ -31,7 +32,7 @@ var splitPhrase=function(cor,simplephrase) {
 	var loadtokens=[],lengths=[],j=0,lastbigrampos=-1;
 
 	var putUnigram=function(token){
-		var variants=expandVariant(token);
+		var variants=cor.expandVariant(token);
 		if (variants instanceof Array) {
 			variants=variants.filter(function(v){
 				const at=plist.indexOfSorted(alltokens,v);
@@ -46,7 +47,7 @@ var splitPhrase=function(cor,simplephrase) {
 	while (j+1<tokens.length) {
 		var token=tokens[j][0];
 		var nexttoken=tokens[j+1][0];
-		const possiblebigrams=enumBigram(token,nexttoken);
+		const possiblebigrams=enumBigram(cor,token,nexttoken);
 		const bi=[];
 		for (var k=0;k<possiblebigrams.length;k++) {
 			var i=plist.indexOfSorted(alltokens,possiblebigrams[k]);

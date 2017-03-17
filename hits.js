@@ -45,6 +45,7 @@ const getArticleHits=function(opts,cb){
 				if (i==0) linestart=linebreaks[hitat];
 				linetext.push(lines[hitat]);
 			}
+			
 			const hits=cor.fromTPos(posting,{linetext:linetext, linetpos:res.linetpos }).kpos;
 
 			const endposting=posting.map(function(p,idx){
