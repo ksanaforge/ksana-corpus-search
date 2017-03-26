@@ -12,11 +12,11 @@ const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
 	var out=[];
 	for (var i=0;i<parts.length;i++) {
-		var part=parts[i];
+		var part=parts[i].replace(/[ \+!]+/," ");
 		if (part[0]=='"') {
 			out.push(part.substr(1,part.length-2));
 		} else {
-			out=out.concat( part.split(/([ !]+)/g));
+			out=out.concat( part.split(" "));
 		}
 	}
 	out=out.filter(function(o){return o.trim().length});
