@@ -12,7 +12,7 @@ const breakIntoPhrases=function(query){
 	const parts=query.split(/(".+?")/g);
 	var out=[];
 	for (var i=0;i<parts.length;i++) {
-		var part=parts[i].replace(/[ \+!]+/," ");
+		var part=parts[i].replace(/[ \+!]+/g," ");
 		if (part[0]=='"') {
 			out.push(part.substr(1,part.length-2));
 		} else {

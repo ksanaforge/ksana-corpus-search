@@ -76,7 +76,7 @@ var splitPhrase=function(cor,simplephrase) {
 		} else {//unigram
 			//filter out variants not in cor
 			if  (lengths[lengths.length-1]==2) {
-				token=tokens[j+1][0];
+				token=tokens[j][0];
 			}
 			putUnigram(token);
 			j++;
