@@ -17,15 +17,13 @@ const enumBigram=function(cor,t1,t2){
 	}
 	return out;
 }
-//split phrase into unigram and bigram
 // 發菩提心   ==> 發菩  提心       2 2   
-// 菩提心     ==> 菩提  提心       1 2
-// 劫劫       ==> 劫    劫         1 1   // invalid
-// 因緣所生法  ==> 因緣  所生   生法   2 1 2
-// 民國五     ==  民國  五             2 1
+// 菩提心     ==> 菩提  心         2 1
+// 因緣所生法  ==> 因緣  所生   法  2 2 1
+// 民國五     ==  民國  五         2 1
+
 var splitPhrase=function(cor,simplephrase) {
 	var alltokens=cor.get(["inverted","tokens"])||[];
-
 	var tokens=cor.tokenizer.tokenize(simplephrase);
 	
 	tokens=tokens.filter(function(tk){return tk[3]!=="P" && tk[3]!==" "});
@@ -57,31 +55,14 @@ var splitPhrase=function(cor,simplephrase) {
 		}
 		if (bi.length)  {
 			bi.length==1?loadtokens.push(bi[0]):loadtokens.push(bi);
-			if (j+3<tokens.length) {
-				lastbigrampos=j;
-				j+=2;
-			} else {
-				if (j+2==tokens.length){ 
-					if (lastbigrampos+1==j ) {
-						lengths[lengths.length-1]--;
-					}
-					lastbigrampos=j;
-					j++;
-				}else {
-					lastbigrampos=j;
-				}
-				j++;
-			}
 			lengths.push(2);
-		} else {//unigram
-			//filter out variants not in cor
-			if  (lengths[lengths.length-1]==2) {
-				token=tokens[j][0];
-			}
-			putUnigram(token);
 			j++;
+		} else {
+			putUnigram(token);
 		}
+		j++;
 	}
+
 	var totallen=lengths.reduce(function(r,a){return r+a},0);
 	while (totallen<tokens.length) {
 		token=tokens[j][0];
@@ -89,9 +70,9 @@ var splitPhrase=function(cor,simplephrase) {
 		j++;
 		totallen++;
 	}
-	return {tokens:loadtokens, lengths: lengths , tokenlength: tokens.length};
+	return {tokens:loadtokens, lengths: lengths , 
+		tokenlength: tokens.length};
 }
-
 
 const nativeMergePostings=function(cor,paths,cb){
 	cor.get(paths,{address:true},function(postingAddress){ //this is sync
