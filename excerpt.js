@@ -15,6 +15,7 @@ const fetchExcerpts=function(cor,opts,cb){
 			return;
 		}
 		const linekrange=res.linekrange,kpos=res.kpos,linetpos=res.linetpos;
+
 		cor.getText(linekrange,function(texts){
 			var out=[];
 			for (var i=0;i<texts.length;i++){
@@ -23,8 +24,13 @@ const fetchExcerpts=function(cor,opts,cb){
 				const layout=cor.layoutText(texts[i],startkpos,null,linetpos[i]);
 				if (opts.phrasepostings) { //trim posting and convert to kpos
 					opts.phrasepostings.forEach(function(item) { 
+						var tposstart=linetpos[i][0];
 						const tposend=linetpos[i][linetpos[i].length-1];
-						const posting=plist.trim(item.postings,linetpos[i][0],tposend);
+						var ii=i;
+						while (!tposstart && i<linetpos.length) {
+							tposstart=linetpos[++i][0];
+						}
+						const posting=plist.trim(item.postings,tposstart,tposend);
 						const hits=cor.fromTPos(posting,{linetext:layout.lines, linetpos:layout.linetpos}).kpos;
 						const endposting=posting.map(function(p,idx){
 							return p+(item.lengths[idx]||item.lengths);
