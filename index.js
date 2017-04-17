@@ -30,7 +30,8 @@ const phraseType=function(cor,phrase){
 	const TokenTypes=cor.tokenizer.TokenTypes;
 	const res=cor.tokenizer.tokenize(phrase);
 	const PUNC=TokenTypes.PUNC;
-	const haspunc=res.filter(function(t){return t[3]==PUNC}).length;
+
+	const haspunc=res.filter(function(t){return t[2]==PUNC}).length;
 	if (haspunc || res.length>=15) {
 		return phraseSearch.fuzzyPhrase;
 	}
