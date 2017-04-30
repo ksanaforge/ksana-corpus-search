@@ -319,6 +319,7 @@ var pland = function (pl1, pl2, distance) {
   return r;
 }
 var combine=function (postings) {
+  if (postings.length==1) return postings[0]
   var out=[];
   for (var i in postings) {
     out=out.concat(postings[i]);

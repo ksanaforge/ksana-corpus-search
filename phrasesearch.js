@@ -119,32 +119,27 @@ const getPostings=function(cor,tokens,cb){
 			}
 		}
 	}
-
 	cor.get(paths,function(postings){ 
 		var now=0,i=0;
-		while (i<postings.length){
-			const postingcount=out[now][1];
+		for (var i=0;i<out.length;i++) {
+			const postingcount=out[i][1];
 			if (postingcount instanceof Array) {
-				i++;
 				continue;//from cache
 			}
-			if (postingcount==1) {
-				out[now][1]=postings[i];
-				i++;
-			} else {
-				const tokenpostings=[];
-				for (var j=0;j<postingcount;j++) {
-					tokenpostings.push(postings[i]);
-					i++;
-				}
-				const combined=plist.combine(tokenpostings);
-				const key=out[now][0];
-				cor.cachedPostings[key.join(",")]=combined;
-				out[now][1]=combined;
+
+			const tokenpostings=[];
+			for (var j=0;j<postingcount;j++) {
+				tokenpostings.push(postings[now]);
+				now++;
 			}
-			now++;
+			const combined=plist.combine(tokenpostings);
+			const key=out[i][0];
+			if (tokenpostings.length>1) {
+				cor.cachedPostings[key.join(",")]=combined;	
+			}
+			out[i][1]=combined;
 		}
-		
+
 		const outtokens=out.map(function(o){return o[0]});
 		const outpostings=out.map(function(o){return o[1]});
 		cb(outtokens,outpostings);
