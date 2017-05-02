@@ -40,7 +40,7 @@ var splitPhrase=function(cor,simplephrase) {
 
 	for (var i=0;i<tokens.length;i++) {
 		if (tokens[i][2]===LATIN) {
-			tokens[i][0]=normalize(tokens[i][0]);
+			tokens[i][0]=normalize(tokens[i][0]).toLowerCase();
 		}
 	}
 
