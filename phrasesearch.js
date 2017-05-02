@@ -3,7 +3,7 @@
 
 const convolutionSearch=require("./convolution").convolutionSearch;
 const plist=require("./plist");
-
+const normalize=require("ksana-corpus/diacritics").normalize;
 const enumBigram=function(cor,t1,t2){
 	var v1=cor.expandVariant(t1);
 	var v2=cor.expandVariant(t2);
@@ -21,12 +21,30 @@ const enumBigram=function(cor,t1,t2){
 // 菩提心     ==> 菩提  心         2 1
 // 因緣所生法  ==> 因緣  所生   法  2 2 1
 // 民國五     ==  民國  五         2 1
-
 var splitPhrase=function(cor,simplephrase) {
+	const TokenTypes=cor.tokenizer.TokenTypes;
+	const PUNC=TokenTypes.PUNC;
+	const LATIN=TokenTypes.LATIN;
+	const SPACE=TokenTypes.SPACE;
+
 	var alltokens=cor.get(["inverted","tokens"])||[];
 	var tokens=cor.tokenizer.tokenize(simplephrase);
-	
-	tokens=tokens.filter(function(tk){return tk[3]!=="P" && tk[3]!==" "});
+
+	while (tokens.length&& tokens[0]&&tokens[0][2]==PUNC) {
+		tokens.shift();
+	}
+	while (tokens.length&& tokens[tokens.length-1]&&
+		tokens[tokens.length-1][2]==PUNC) {
+		tokens.pop();
+	}
+
+	for (var i=0;i<tokens.length;i++) {
+		if (tokens[i][2]===LATIN) {
+			tokens[i][0]=normalize(tokens[i][0]);
+		}
+	}
+
+	tokens=tokens.filter(function(tk){return tk[2]!==PUNC && tk[2]!==SPACE});
 	var loadtokens=[],lengths=[],j=0,lastbigrampos=-1;
 
 	var putUnigram=function(token){
@@ -119,6 +137,7 @@ const getPostings=function(cor,tokens,cb){
 			}
 		}
 	}
+
 	cor.get(paths,function(postings){ 
 		var now=0,i=0;
 		for (var i=0;i<out.length;i++) {
@@ -147,13 +166,11 @@ const getPostings=function(cor,tokens,cb){
 }
 const simplePhrase=function(cor,phrase,cb){
 	const splitted=splitPhrase(cor,phrase.trim());
-
 	if (cor.mergePostings) { //native search doesn't support variants
 		var paths=postingPathFromTokens(cor,splitted.tokens);
 		nativeMergePosting(cor,paths,cb);
 		return;
 	}
-
 	getPostings(cor,splitted.tokens,function(tokens,postings){
 		var out=postings[0],dis=splitted.lengths[0];
 		for (var i=1;i<postings.length;i++) {

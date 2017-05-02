@@ -28,9 +28,14 @@ const parseQuery=function(cor,query) {
 }
 const phraseType=function(cor,phrase){
 	const TokenTypes=cor.tokenizer.TokenTypes;
-	const res=cor.tokenizer.tokenize(phrase);
+	var res=cor.tokenizer.tokenize(phrase);
 	const PUNC=TokenTypes.PUNC;
-
+	while (res.length&&res[0]&&res[0][2]==PUNC) {
+		res.shift();
+	}
+	while (res.length&&res[res.length-1]&&res[res.length-1][2]==PUNC) {
+		res.pop();
+	}
 	const haspunc=res.filter(function(t){return t[2]==PUNC}).length;
 	if (haspunc || res.length>=15) {
 		return phraseSearch.fuzzyPhrase;
