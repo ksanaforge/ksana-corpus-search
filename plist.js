@@ -225,6 +225,34 @@ var plfollow2 = function (pl1, pl2, mindis, maxdis) {
   return r;
 }
 
+var plNear = function (pl1, pl2, mindis, maxdis) {
+  var r = [],i=0;
+  var swap = 0;
+  var dis=0;
+  while (i<pl1.length){
+    var k = indexOfSorted(pl2, pl1[i] + mindis);
+    dis=Math.abs(pl2[k]-pl1[i]);
+    var t = (dis>=mindis && dis<maxdis) ? k : -1;
+    if (t > -1) {
+      r[r.length]=pl1[i];
+      i++;
+    } else {
+      if (k>=pl2.length) break;
+      var k2=indexOfSorted (pl1,pl2[k]-maxdis);
+
+      if (k2>i) {
+        dis=Math.abs(pl2[k]-pl1[i]);
+        var t = (dis>=mindis && dis<maxdis) ? k : -1;
+
+        if (t>-1) r[r.length]=pl1[k2];
+        i=k2;
+      } else break;
+    }
+  }
+  return r;
+}
+
+
 var plnotfollow2 = function (pl1, pl2, mindis, maxdis) {
   var r = [],i=0;
   
@@ -408,7 +436,8 @@ const plmerge=function(postings,maxdis){
   postings.sort(function(a,b){return a.length-b.length});
   var out=postings[0],i=1;
   while (i<postings.length) {
-    out=plfollow2(out,postings[i],1,maxdis);
+    //out=plfollow2(out,postings[i],1,maxdis);
+    out=plNear(out,postings[i],1,maxdis);
     i++;
   }
   return out;
