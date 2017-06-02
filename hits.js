@@ -52,7 +52,20 @@ const getArticleHits=function(opts,cb){
 				return p+(item.lengths[i]||item.lengths);
 			});
 
-			const hitsend=cor.fromTPos(endposting,{linetext:linetext, linetpos:res.linetpos }).kpos;
+			// 若是有跨行, 則 linextext 也要重新取得, 不然跨行塗色會失敗
+			const endres=cor.fromTPos(endposting,{});
+			var endlinetext=[], linestart;
+			for (var i=0;i<endres.kpos.length;i++) {
+				var endhitat=bsearch(linebreaks,endres.kpos[i]);
+				if (endhitat==-1) {
+					//hits at last line
+					endhitat=linebreaks.length-1;
+				}
+				if (i==0) linestart=linebreaks[endhitat];
+				endlinetext.push(lines[endhitat]);
+			}
+			
+			const hitsend=cor.fromTPos(endposting,{linetext:endlinetext, linetpos:endres.linetpos }).kpos;
 			phrasehits.push({phrase:item.phrase, hits:hits, hitsend:hitsend,lengths:item.lengths, idx:idx});
 
 		});
