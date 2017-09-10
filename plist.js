@@ -233,7 +233,7 @@ var plNear = function (pl1, pl2, mindis, maxdis) {
     //var k = indexOfSorted(pl2, pl1[i] + mindis);
     var k = indexOfSorted(pl2, pl1[i] - maxdis);
     dis=Math.abs(pl2[k]-pl1[i]);
-    var t = (dis>=mindis && dis<maxdis) ? k : -1;
+    var t = (dis>=mindis && dis<=maxdis) ? k : -1;
     if (t > -1) {
       r[r.length]=pl1[i];
       i++;
@@ -244,7 +244,7 @@ var plNear = function (pl1, pl2, mindis, maxdis) {
       if (k2>i) {
         // dis=Math.abs(pl2[k]-pl1[i]);
         dis=Math.abs(pl2[k]-pl1[k2]);
-        var t = (dis>=mindis && dis<maxdis) ? k : -1;
+        var t = (dis>=mindis && dis<=maxdis) ? k : -1;
 
         if (t>-1)
         {
